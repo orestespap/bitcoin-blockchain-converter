@@ -2,7 +2,7 @@
 
 The purpose of this Python 3 pipeline is to retrieve, compress and store the transactions from the Bitcoin blockchain into a big flat int array. This makes output data compatible with all languages, allowing researchers to analyze the data regardless of their tech stack of choice. 
 
-The motivation behind this project is my MSc thesis, where the goal is to extract and analyze Bitcoin's user graph based on the output of this pipeline.
+The motivation behind this project is my MSc thesis, where the goal is to extract and analyze Bitcoin's user graph based on the output of this pipeline. The pipeline's execution time is about three days long; the sub-tasks dominating execution time are _downloadBlockchain.py_ and _getInputs.py_. 
 
 ## Table of Contents ##
 - [**Features**](#features)
@@ -15,14 +15,21 @@ The motivation behind this project is my MSc thesis, where the goal is to extrac
 
 The pipeline provides the three following functionalities:
   
-- Normalize and store transaction data into an uint32 array
+- Compress, normalize and store transaction data into an uint32 array
 
-- Normalize, cluster transaction inputs and outputs using the [common-input-ownership](https://en.bitcoin.it/wiki/Common-input-ownership_heuristic) heuristic, and store transaction data into an in uint32 array
+- Compress, normalize, cluster transaction inputs and outputs using the [common-input-ownership](https://en.bitcoin.it/wiki/Common-input-ownership_heuristic) heuristic, and store transaction data into an in uint32 array
 
-- Normalize/cluster, create Bitcoin user graph out of the clustered transaction data, and store it into an uint32 array
+- Compress/normalize/cluster, create Bitcoin user graph out of the clustered transaction data, and store it into an uint32 array
 
-- Each transaction consists of its txid, input/output addresses, output values, timestamp and fee (the sum value of the inputs is stored, hence transaction fee can be calculated as follows: _sum_(inputsTotalValue) - _sum_(outputsTotalValue))
+Each transaction consists of the following attributes:
+- Txid
+- Input addresses
+- Output addresses
+- Output values
+- Timestamp 
+- Fee
 
+Additional transaction attributes can be added by manipulating the code accordingly. For instance, categorical string data, such as output script type, could be stored by casting each value to an integer.
 
 ## Hardware requirements ##
 To get the the transaction data you'll need:
@@ -39,7 +46,7 @@ By design, the project has very limited dependencies in order to make it easy to
 
 To parse the Bitcoin blockchain, we used a [Python blockchain parser](https://github.com/alecalve/python-bitcoin-blockchain-parser) developed by [@alecalve](https://github.com/alecalve). 
 
-To download all of the dependencies, open up a terminal, cd into the repository local directory (in your computer) and type in the following command:
+To download all of the dependencies, open up a terminal, cd into the repository's local directory (in your computer) and type in the following command:
 
     python -m pip install -r requirements.txt
 
@@ -50,6 +57,8 @@ Each transaction is represented by a sequence of 8-byte integeres. The pattern u
     txid, input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., output_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_m-1, timestamp, sumOfInputValues_flag, sumOfInputValues
     
     Element count per transaction: n + 3*m + 6
+
+While we don't store the transaction fee explicitly, it can be trivially calculated as follows: _sumOfInputValues_ - _sum_(outputValue_0 : outputValue_m-1).
 
 The purpose of the _flag_ values preceding each ouput value and the sum of inputs is to indicate whether the following value is denominated in Bitcoin or Satoshi. 
 
