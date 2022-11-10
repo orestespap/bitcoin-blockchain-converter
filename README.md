@@ -1,3 +1,3 @@
-# bitcoin-blockchain-converter
+# Bitcoin blockchain converter
 
 test
