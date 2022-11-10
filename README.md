@@ -32,13 +32,17 @@ Each transaction consists of the following attributes:
 Additional transaction attributes can be added by manipulating the code accordingly. For instance, categorical string data, such as output script type, could be stored by casting each value to an integer.
 
 ## Hardware requirements ##
-To get the the transaction data you'll need:
+To store the the unclustered blockchain you'll need:
 - 16GB RAM
 - 600GB of storage (Bitcoin blockchain weighs approximately 440GB as of November 2022, our compressed version trims it down to about 45GB)
 
-To get the clustered transaction data you'll need:
+To store either the clustered blockchain or the graph you'll need:
 - 128GB RAM (output dictionary of Union-Find algorithm used to cluster the addresses weights approximately 92GB and requires 9.2GB of storage in _.pickle_ format)
 - 600GB of storage
+
+To store both the clustered blockchain and the graph you'll need:
+- 128GB RAM
+- 650GB of storage 
 
 ## Installing ##
 
