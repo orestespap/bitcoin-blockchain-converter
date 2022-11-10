@@ -1,4 +1,4 @@
-# Python 3 Bitcoin blockchain converter 
+# Python 3 Bitcoin Blockchain Converter 
 
 The purpose of this Python 3 pipeline is to retrieve, compress and store the transactions from the Bitcoin blockchain into a big flat int array. This makes output data compatible with all languages, allowing researchers to analyze the data regardless of their tech stack of choice. 
 
@@ -8,7 +8,7 @@ The motivation behind this project is my MSc thesis, where the goal is to extrac
 - [**Features**](#features)
 - [**Hardware Requirements**](#hardware-requirements)
 - [**Installing**](#installing)
-- [**Data Format**](#data-format)
+- [**Data Compression And Normalization**](#data-compression-and-normalization)
 
 
 ## Features ##
@@ -43,7 +43,7 @@ To download all of the dependencies, open up a terminal, cd into the repository 
 
     python -m pip install -r requirements.txt
 
-## Data Format ##
+## Data Compression And Normalization ##
 
 Each transaction is represented by a sequence of 8-byte integeres. The pattern used is the following:
 
@@ -99,4 +99,14 @@ The following example better illustrates this:
 To convert input/output addresses and txid values from HEX to uint32 we used the [MurmurHash](https://en.wikipedia.org/wiki/MurmurHash) non-cryptographic hash function. It is a computationally efficient algorithm and features a relatively low collision rate.
 
 Approximately 3.5% of total txids resulted in a collision. As of November 2022, there are about 770M transactions on the Bitcoin blockchain, hence approximately 2.7M txids will be hashed into an uint32 that an older txid had already been hashed to during the conversion process.
+
+In order to be able to traverse the blockchain in this flat array format efficiently, we store each transaction's offset in a separate array. Therefore, given the transaction order in the blockchain, transaction _i_ can be trivially retrieved from the array as follows:
+
+    Transaction i's slice in the array:
+    transactionArray [ offsets[i] : offsets[i+1] ]
+    
+    Transaction i length = offsets[i+1] - offsets[i]
+
+## Pipeline: Step-by-step ##
+
 
