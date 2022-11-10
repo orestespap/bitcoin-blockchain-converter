@@ -8,11 +8,11 @@ The motivation behind this project is my MSc thesis, where the goal is to extrac
 
 The pipeline provides the three following functionalities:
   
-- Normalize and store transaction data into an int32 array
+- Normalize and store transaction data into an uint32 array
 
-- Normalize, cluster transaction inputs and outputs using the [common-input-ownership](https://en.bitcoin.it/wiki/Common-input-ownership_heuristic) heuristic, and store transaction data into an in int32 array
+- Normalize, cluster transaction inputs and outputs using the [common-input-ownership](https://en.bitcoin.it/wiki/Common-input-ownership_heuristic) heuristic, and store transaction data into an in uint32 array
 
-- Normalize/cluster, create Bitcoin user graph out of the clustered transaction data, and store it into an int32 array
+- Normalize/cluster, create Bitcoin user graph out of the clustered transaction data, and store it into an uint32 array
 
 - Each transaction consists of its txid, input/output addresses, output values, timestamp and fee (the sum value of the inputs is stored, hence transaction fee can be calculated as follows: _sum_(inputsTotalValue) - _sum_(outputsTotalValue))
 
@@ -40,9 +40,58 @@ To download all of the dependencies, open up a terminal, cd into the repository 
 
 Each transaction is represented by a sequence of 8-byte integeres. The pattern used is the following:
 
-    txid, input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., output_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_0, timestamp, sumOfInputValues_flag, sumOfInputValues
+    txid, input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., output_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_m-1, timestamp, sumOfInputValues_flag, sumOfInputValues
     
-    Number 
+    Element count per transaction: n + 3*m + 6
+
+The purpose of the _flag_ values preceding each ouput value and the sum of inputs is to indicate whether the following value is denominated in Bitcoin or Satoshi. 
+
+In the Bitcoin blockchain, output values are denominated in Satoshi; 100M Satoshi = 1 Bitcoin. Satoshis are non-negative integers. A uint32 can store any integer in the range (0,2^32-1).
+
+Hence, to store values greater than or equal to 42.94967296 Bitcoin in uint32, a we convert the Satoshi value to Bitcoin and round it to the second decimal point, hence the value is now stored in integer format. 
+
+The following example better illustrates this:
+
+    Value flags:
+    0: following value is Satoshi
+    1: following value is Bitcoin
+    
+
+    Raw transaction:
+    Input 0: 4312340000 Satoshi
+    Input 1: 100000000 Satoshi
+    
+    Output 0: 4312340000 Satoshi
+    Output 1: 4000000 Satoshi
+    Output 2: 5000000 Satoshi
+    
+    Output_0 value: 4,312,340,000 Satoshi
+    Convert to Bitcoin: 43.1234
+    Round to second decimal: 43.12
+    Cast to integer: 4312
+    Value flag: 1
+    
+    Output_1 value: 4,000,000 Satoshi
+    Value flag: 0
+    
+    Output_2 value: 5,000,000 Satoshi
+    Value flag: 0
+    
+    sumOfInputValues: 4412340000
+    Convert to Bitcoin: 44.12
+    Round to second decimal: 44.12
+    Cast to integer: 4412
+    Value flag: 1
+    
+    
+    Normalized transaction = [txid, 2, inpAddr_0, inpArr_1, 3, outAddr_0, outAddr_1, outAddr_2, 1, 4312, 0, 4000000, 0, 5000000, timestamp, 1, 4412]
+    
+    Transaction fee = 44.12 - (43.12 + 0.4 +0.5) = 0.1 Bitcoin
+    
+    
+    
+    
+    
 
 
 
