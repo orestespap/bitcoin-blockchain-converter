@@ -72,7 +72,7 @@ def rootify(parents):
     return 1
 
 
-def flatBlockchainFoo():
+def foo():
     parents=loadPickle("ps.pickle")
     rootify(parents)
 

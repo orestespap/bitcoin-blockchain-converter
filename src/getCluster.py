@@ -9,7 +9,7 @@ def findRoot(child,parents):
     return child
         
 
-def foo(txs,parents,treeSize):
+def cluster(txs,parents,treeSize):
     
     
     
@@ -74,14 +74,14 @@ def foo(txs,parents,treeSize):
                                     k=anInput
                                     kRoot=inpRoot
 
-if __name__=="__main__":
-	parents={}
+def foo():
+    parents={}
 	treeSize={}
 	times=[]
 	for i in range(0,150):
 		hashMap=loadPickle(f"bitcoinMaps/{i}.pickle")
 		t1=time.time()
-		foo(hashMap,parents,treeSize)
+		cluster(hashMap,parents,treeSize)
 		times.append({"N":len(parents.keys()),"t":time.time()-t1})
 		if (i+1)%10==0:
 			saveJSON(times,"times.json")
@@ -89,3 +89,6 @@ if __name__=="__main__":
 	savePickle(parents,"ps.pickle")
 	savePickle(treeSize,"t.pickle")
 	saveJSON(times,"times.json")
+
+if __name__=="__main__":
+	

@@ -1,7 +1,7 @@
 from fileManager import loadPickle, savePickle, saveJSON, loadJSON
 import time
 
-def getInputsFoo():
+def foo():
     lookupDepth=loadJSON("lookupDepth.json")
     t1=time.time()
     for i in range(0,150):

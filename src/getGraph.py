@@ -3,7 +3,7 @@ import time,gc,h5py
 import numpy as np
 import os
 
-def graphFoo():
+def foo():
     errors=0
     times=[]
     t1=time.time()

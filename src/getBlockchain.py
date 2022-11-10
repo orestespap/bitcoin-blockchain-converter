@@ -44,7 +44,7 @@ def getData(txs):
     return t
 
 
-def downloadBlockchainFoo():
+def foo():
     t1=time.time()
     dictIndex=loadJSON("currentBlock.json")[2]
     hashMap={}
