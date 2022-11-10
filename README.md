@@ -1,8 +1,15 @@
-# Python 3.X Bitcoin blockchain converter 
+# Python 3 Bitcoin blockchain converter 
 
-The purpose of this Python 3.X pipeline is to retrieve, compress and store the transactions from the Bitcoin blockchain into a big flat int array. This makes output data compatible with all languages, allowing researchers to analyze the data regardless of their tech stack of choice. 
+The purpose of this Python 3 pipeline is to retrieve, compress and store the transactions from the Bitcoin blockchain into a big flat int array. This makes output data compatible with all languages, allowing researchers to analyze the data regardless of their tech stack of choice. 
 
 The motivation behind this project is my MSc thesis, where the goal is to extract and analyze Bitcoin's user graph based on the output of this pipeline.
+
+## Table of Contents ##
+- [**Features**](#features)
+- [**Hardware Requirements**](#hardware-requirements)
+- [**Installing**](#installing)
+- [**Data Format**](#data-format)
+
 
 ## Features ##
 
@@ -28,7 +35,7 @@ To get the clustered transaction data you'll need:
 
 ## Installing ##
 
-The project has very limited dependencies by design in order to make it easy to install and use for researchers from all backgrounds. We also assume that researchers already have the Bitcoin blockchain data available. If not, you can get it using [Bitcoin Core](https://bitcoin.org/en/download).
+By design, the project has very limited dependencies in order to make it easy to install and use for researchers from all backgrounds. We also assume that researchers already have the Bitcoin blockchain data available. If not, you can get it using [Bitcoin Core](https://bitcoin.org/en/download).
 
 To parse the Bitcoin blockchain, we used a [Python blockchain parser](https://github.com/alecalve/python-bitcoin-blockchain-parser) developed by [@alecalve](https://github.com/alecalve). 
 
@@ -78,7 +85,7 @@ The following example better illustrates this:
     Value flag: 0
     
     sumOfInputValues: 4412340000
-    Convert to Bitcoin: 44.12
+    Convert to Bitcoin: 44.1234
     Round to second decimal: 44.12
     Cast to integer: 4412
     Value flag: 1
@@ -87,11 +94,9 @@ The following example better illustrates this:
     Normalized transaction = [txid, 2, inpAddr_0, inpArr_1, 3, outAddr_0, outAddr_1, outAddr_2, 1, 4312, 0, 4000000, 0, 5000000, timestamp, 1, 4412]
     
     Transaction fee = 44.12 - (43.12 + 0.4 +0.5) = 0.1 Bitcoin
-    
-    
-    
-    
-    
 
 
+To convert input/output addresses and txid values from HEX to uint32 we used the [MurmurHash](https://en.wikipedia.org/wiki/MurmurHash) non-cryptographic hash function. It is a computationally efficient algorithm and features a relatively low collision rate.
+
+Approximately 3.5% of total txids resulted in a collision. As of November 2022, there are about 770M transactions on the Bitcoin blockchain, hence approximately 2.7M txids will be hashed into an uint32 that an older txid had already been hashed to during the conversion process.
 
