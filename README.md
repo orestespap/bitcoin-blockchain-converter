@@ -125,8 +125,8 @@ In order to be able to traverse the blockchain in this flat array format efficie
 
 The pipeline consists of five stages, each represented by an individual script in the  _src_ directory:
 
-1. Get blockchain
-2. Get input addresses
+1. [**Get blockchain**](#getblockchainpy)
+2. [**Get input addresses**](#getinputaddrpy)
 3. Get cluster
 4. Get flat blockchain
 5. Get graph
@@ -151,9 +151,9 @@ During our research, we didn't encounter any keys pointing to more than two tran
         Dictionary entry with hash collision:
         {txid_0: [ [txid_0_data],  [txid_1_data] ..., [txid_n_data]]}
 
-As aforementioned, we store transaction data in Python lists. While it is customary to store numeric data in Numpy arrays, we avoided using the particular data structure throught the pipeline (except for the output data) for the following reasons:
+As aforementioned, we store transaction data in Python lists. While it is customary to store numeric data in Numpy arrays, we avoided using the particular data structure throughout the pipeline (except for the output data) for the following reasons:
 
-1. Traversing numpy arrays is considerbly slower than traversing Python lists due to [on-the-fly object unpacking](https://stackoverflow.com/a/63873120/9042791)
+1. Traversing numpy arrays is considerbly slower than traversing Python lists due to [on-the-fly object unpacking](https://stackoverflow.com/a/63873120/9042791).
 2. Numpy is an optimal choice for vector operations. No vector operations are performed throughout the pipeline, traversing the array/list data is the dominant cost.
 3. Storage footprint is approximately the same in pickle format. Pickle files weigh approximately 10% of an object's memory footprint. 
 4. While a larger memory footprint is a tradeoff when using lists over Numpy arrays, list traversal provides an 5-fold (minimum) performance boost. Most researchers can get their hands on 16GB/128GB machines to get the blockchain and/or the graph respectively.
@@ -163,16 +163,16 @@ The script's output is an arbitrary number of dictionaries stored in pickle file
 ### getInputAddr.py ###
 In the second stage, the script parses the dictionarys created in the first stage to retrieve each tx's input addresses and their total value.
 
-Each transaction input spends a transaction output that is part of the UTXO set at the time. So, each input in the blockchain is represented by a txid and the corresponding output slot/index. The "receiver's address" is stored in that transaction output's address field. 
+Each transaction input spends a transaction output that is part of the UTXO set at the time. So, each input in the blockchain is represented by a txid and the corresponding output slot/index. The _"receiver's address"_ is stored in that transaction output's address field. 
 
-Given that a txid referenced by an input is in the same dictionary/file as the input, the cost of retrieving the address is O(1), since the hashed txids are the dictionary's keys. If the referenced txid is part of the dictionary's key set, the following outcomes are possible:
+Given that a txid referenced by an input is in the same dictionary/file as the input, the cost of retrieving the address is O(1), since dictionary keys are the hashed txids. If the referenced txid is part of the dictionary's key set, the following outcomes are possible:
 
 1. Txid points to a single transaction - no hash collisions. The referenced output index is __smaller__ than the tx's number of outputs. Hit.
 2. -//-. The referenced output index is __greater__ than the tx's number of outputs. Correct transaction is in some previous dict. Miss.
-3. Txid point to multiple transactions - hash collision. First transaction whose output count is greater than the output index is a match. Hit.
+3. Txid point to multiple transactions - hash collision. First transaction whose output count is greater than the output index is a match (at least one tx satisfies this). Hit.
 4. -//-. Output index is greater than every transaction's output count. Correct transaction is in some previous dict. Miss.
 
-Due to hash collisions, extra checks need to take place to ensure that the transaction matching the txid referenced by the input is the right transaction, or at least a feasible candidate. The computationally cheapest to achieve this is by checking whether a transaction's total output count is greater than the referenced output slot. 
+Due to hash collisions, extra checks need to take place to ensure that the transaction matching the txid referenced by the input is the right transaction, or at least a feasible candidate. The computationally cheapest way of achieving this is by checking whether a transaction's total output count is greater than the referenced output slot. 
 
 For instance, if an input is spending transaction X's 4th output, and txid X exists in the same dictionary, but it points to a transaction with 2 outputs, then we can conclude that the right transaction is located in some other dictionary (hash collision across different dictionaries).
 
@@ -202,5 +202,40 @@ The lookup process in pseudocode:
   ```
 If there are missing addresses after the lookup is completed there is definitely something wrong with either the output from stage 1, or the code in stage 2. Every address referenced by an input is in the blockchain, specifically either in a previous transaction recorded in the same block or some older block.
 
-During our research, we retrieved all the blocks starting from height 0, all the way up to (approx.) height 750K and encountered no such error.
+During our research, we retrieved all the blocks starting from height 0, all the way up to (approx.) height 750K and encountered no such error. The output of stage 2 is our fully normalized version of the Bitcoin blockchain, stored in a number of Python dictionaries. In the fourth stage, these dicts are converted in flat integer arrays and stored in h5 format.
+
+### getCluster.py ###
+In the third stage (optional), input addresses are clustered using the common-input-ownership heuristic. This heuristic explicitly assumes that all input addresses belong to the same entity. CIO is probably the most widely adopted clustering method for the Bitcoin blockchain and computationally inexpensive (the latter being a factor of its popularity).
+
+We implement this heuristic using the [weighted union find](https://aquarchitect.github.io/swift-algorithm-club/Union-Find/) algorithm. The script uses a Python dictionary to store the data. Both keys and values are addresses; each key points to an address, that address is the key's parent node. If a key value pair is equal, the key/address is a root node. Root nodes basically correspond to cluster ids.
+
+
+        union_find_dict= { data }
+
+        Input address: X
+
+        Tree: X -> Y -> N -> Z
+
+        union_find_dict[X]=Y, Y is the father of X
+
+        findRoot(X)=Z, Z is a root node. Root nodes/addresses correspond to clusters. X belongs in cluster Z.
+
+        if findRoot(X)=X, X's root is itself; X is a root node.
+
+Stage 3's output is the aforementioned dictionary. Given an address X that's encountered in at least one transaction's inputs, findRoot(X) returns the appropriate cluster.
+
+
+### getFlatBlockchain.py ###
+In the fourth stage, 
+
+
+
+
+### getGraph.py ###
+
+
+
+
+
+
 

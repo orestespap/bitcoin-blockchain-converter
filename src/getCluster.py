@@ -1,5 +1,6 @@
 from fileManager import saveJSON,loadJSON, loadPickle, savePickle
 import time
+
 def findRoot(child,parents):
     parent=parents[child]
     while child!=parent:
@@ -15,7 +16,7 @@ def cluster(txs,parents,treeSize):
     
     for k,aTX in txs.items():
 
-        if type(aTX[0])!=list:
+        if type(aTX[0])!=list: 
             aTX=[aTX]
             
         inputs=[]
@@ -75,20 +76,20 @@ def cluster(txs,parents,treeSize):
                                     kRoot=inpRoot
 
 def foo():
-    parents={}
-	treeSize={}
-	times=[]
+    parents, treeSize = {}, {}
+
+	#times=[]
 	for i in range(0,150):
 		hashMap=loadPickle(f"bitcoinMaps/{i}.pickle")
-		t1=time.time()
+		#t1=time.time()
 		cluster(hashMap,parents,treeSize)
-		times.append({"N":len(parents.keys()),"t":time.time()-t1})
-		if (i+1)%10==0:
-			saveJSON(times,"times.json")
+		#times.append({"N":len(parents.keys()),"t":time.time()-t1})
+		#if (i+1)%10==0:
+			#saveJSON(times,"times.json")
 
 	savePickle(parents,"ps.pickle")
-	savePickle(treeSize,"t.pickle")
-	saveJSON(times,"times.json")
+	#savePickle(treeSize,"t.pickle")
+	#saveJSON(times,"times.json")
 
 if __name__=="__main__":
     print("getCluster.py")

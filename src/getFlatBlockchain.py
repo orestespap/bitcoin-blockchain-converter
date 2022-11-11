@@ -23,6 +23,7 @@ def clusterf(hashMap,parents):
 
             inpRoots=set(parents[x] if getParents(x) else x for x in set(aSubTX[(1+1*isCoinbase):outStart]))
             if len(inpRoots)!=1:
+                #All input addresses must point to the same root address, therefore inpRoots should be a set of size 1.
                 print(k,aSubTX)
                 flag=1
                 break
@@ -81,12 +82,12 @@ def foo():
 
         hashMap=loadPickle(f"blockchain/{i}.pickle")
         print(i,len(hashMap))
-        t1=time.time()
+        #t1=time.time()
         tdata, toffsets=clusterf(hashMap,parents)
         if tdata==-1:
             print("error",i)
             break
-        print(time.time()-t1)
+        #print(time.time()-t1)
 
         print("Storing files")
 
