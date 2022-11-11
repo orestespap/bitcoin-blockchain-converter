@@ -220,7 +220,7 @@ We implement this heuristic using the [weighted union find](https://aquarchitect
 
         findRoot(10)=10, address_10's root is itself; address_10 is a root node, therefore it corresponds to a cluster id.
 
-Stage 3's output is the aforementioned dictionary. Given an address X that's encountered in at least one transaction's inputs, findRoot(X) returns the appropriate cluster.
+Stage 3's output is the aforementioned dictionary. Given an address X that is encountered in at least one transaction's input space, _findRoot(X)_ returns the appropriate cluster/ root node.
 
 
 ### getFlatBlockchain.py ###
