@@ -210,17 +210,17 @@ In the third stage (optional), input addresses are clustered using the common-in
 We implement this heuristic using the [weighted union find](https://aquarchitect.github.io/swift-algorithm-club/Union-Find/) algorithm. The script uses a Python dictionary to store the data. Both keys and values are addresses; each key points to an address, that address is the key's parent node. If a key value pair is equal, the key/address is a root node. Root nodes basically correspond to cluster ids.
 
 
-        union_find_dict= { data }
+        union_find_dict= { address_0: address_5, address_5:address_8, address_8:address_10, address_10: address_10 }
 
-        Input address: X
+        Input address: 
 
-        Tree: X -> Y -> N -> Z
+        Tree: 0 -> 5 -> 8 -> 10
 
-        union_find_dict[X]=Y, Y is the father of X
+        union_find_dict[0]=5, address_5 is the father of address_0
 
-        findRoot(X)=Z, Z is a root node. Root nodes/addresses correspond to clusters. X belongs in cluster Z.
+        findRoot(0)=10, address_10 is a root node. Root nodes/addresses correspond to clusters. address_0 belongs to cluster address_10.
 
-        if findRoot(X)=X, X's root is itself; X is a root node.
+        findRoot(10)=10, address_10's root is itself; address_10 is a root node, therefore it corresponds to a cluster id.
 
 Stage 3's output is the aforementioned dictionary. Given an address X that's encountered in at least one transaction's inputs, findRoot(X) returns the appropriate cluster.
 
