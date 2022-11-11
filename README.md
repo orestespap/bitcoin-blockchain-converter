@@ -127,7 +127,7 @@ The pipeline consists of five stages, each represented by an individual script i
 
 1. [**Get blockchain**](#getblockchainpy)
 2. [**Get input addresses**](#getinputaddrpy)
-3. Get cluster
+3. [**Get cluster**](#getclusterpy)
 4. Get flat blockchain
 5. Get graph
 
