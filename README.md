@@ -212,8 +212,6 @@ We implement this heuristic using the [weighted union find](https://aquarchitect
 
         union_find_dict= { address_0: address_5, address_5:address_8, address_8:address_10, address_10: address_10 }
 
-        Input address: 
-
         Tree: 0 -> 5 -> 8 -> 10
 
         union_find_dict[0]=5, address_5 is the father of address_0
