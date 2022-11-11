@@ -122,4 +122,35 @@ In order to be able to traverse the blockchain in this flat array format efficie
 
 ## Pipeline: Step-by-step ##
 
+The pipeline consists of five stages, each represented by an individual script in the  _src_ directory:
+
+1. Get blockchain
+2. Get inputs
+3. Get cluster
+4. Get flat blockchain
+5. Get graph
+
+According to a researcher's needs, s/he can opt for the following outputs:
+
+1. Unclustered blockchain
+2. Clustered blockchain
+3. Blockchain user graph
+4. Combo (i.e. graph + clustered blockchain)
+
+Stages 3 and 5 get skipped when the desired output is the compressed Bitcoin blockchain with no address clustering. If clustering and/or the user graph are desired, stages 3 and 5 will be part of the execution pipeline. 
+
+### Get blockchain ###
+In the first stage, the corresponding script parses the raw blockchain data using the aforementioned library, casting transaction data to integers and storing them in a series of Python dictionaries. Each dictionary key corresponds to a hashed transaction id, and the corresponding value is a Python list containing the transaction data. In then event of a hash collision, a key points to a list of lists (a list of transactions whose txids share the same hash).
+
+As aforementioned, we store transaction data in Python. While it is customary to store numeric data in Numpy arrays, we avoided using the particular data structure throught the pipeline (except for the output data) for the following reasons:
+
+1. Traversing numpy arrays is considerbly slower than traversing Python lists due to [on-the-fly object unpacking](https://stackoverflow.com/questions/63870418/why-numpy-arrays-are-slower-than-lists-with-for-loops)
+2. Numpy is an optimal choice for vector operations. No vector operations are performed throught the pipeline, traversing the array/list data is the dominant cost.
+3. Storage footprint is approximately the same in pickle format. Pickle files weigh approximately 10% of an object's memory footprint. 
+4. While a larger memory footprint is a tradeoff when using lists over Numpy arrays, list traversal provides an 5-fold (minimum) performance boost. Most researchers can get their hands on 16GB/128GB machines to get the blockchain and/or the graph respectively.
+
+The script's output is an arbitrary number of dictionaries stored in pickle files. Given that the pipeline was designed so that anyone with a 16GB machine can get the unclustered blockchain, for every 5M transactions scanned, the script dumps the data in a .pickle file to avoid usign up all the available memory. Once main memory is full and virtual memory is employed, the result is a severe performance hit. Hence, storing the data in many smaller files prevents this from happening.
+
+
+
 

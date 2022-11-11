@@ -1,18 +1,46 @@
 from fileManager import loadPickle, savePickle, saveJSON, loadJSON
-import time
 
 def foo():
-    lookupDepth=loadJSON("lookupDepth.json")
-    t1=time.time()
+
+    '''Retrieve input addresses from the corresponding unspent transaction 
+    output it is spending. Replace (unspent_txid, output_slot) with the input's address.'''
+
+
+    
+    '''
+    Files are temporally sorted. Given a total count of N files, 
+    first key in ditc/pickle file 0 corresponds to the first transaction 
+    of the starting block (i.e. block with height 0), while 
+    file N-1's last key corresponds to the last transaction recorded 
+    in the ending block (i.e. block with height 750K).
+
+    For every pickle file i, retrieve each transaction's input addresses. If
+    one or many inputs spend a transaction not in this pickle, store these
+    inputs in a buffer and after parsing the entire pickle file, start looking
+    for those transactions in the previous pickle files, starting from file i-1,
+    all the way up to 0. It can be trivially deduced that all of the unspent txids
+    referenced by file 0's inputs will be in the same file.
+
+    Best case scenario is that all of the input txid references are located 
+    within the same file, while the worst case scenario is that some are located 
+    in the oldest block. Regardless of best or worst case cenario, for every pickle
+    file, ALL of its input txid references are either located in the file itself
+    or some previous file. 
+
+    If there is at least one input whose txid reference is not found, 
+    something has gone terribly wrong.
+
+    '''
+
     for i in range(0,150):
         print("Loading pickle file")
         orIndexx=i
-        hashMap=loadPickle(f"bitcoinMaps/hashMap_{orIndexx}.pickle")
-        print(time.time()-t1)
+        hashMap=loadPickle(f"blockchain/hashMap_{orIndexx}.pickle")
+        
         hashMapGet=hashMap.get
         tlookups=0
         transCount=0
-        t1=time.time()
+        
         missingInp={}
         f=0
         print("Start")
@@ -26,7 +54,7 @@ def foo():
             for txPos,aTX in enumerate(txL):
                 inpSize=int(aTX[0])
 
-                if aTX[2]==4294967295:
+                if aTX[2]==4294967295: #coinbase transaction, no inputs.
                     continue
 
                 t_inpIDs, t_addrS=[], []
@@ -48,6 +76,12 @@ def foo():
                     miss=1
                     skip=outTX[0]
                     if type(skip)!=list:
+
+                        #hash conflict check: if the outputslot spent by the input 
+                        #is greater than the number of available outputs, the tx
+                        #referenced by the input shares the same hash with at least
+                        #one more tx.
+
                         if outputSlot<outTX[skip+1]:
                             t_addrS.append(outTX[skip+2+outputSlot])
                             index=outTX[skip+1]+2+skip+2*outputSlot
@@ -58,14 +92,17 @@ def foo():
                             miss=0
 
                     else:
+                        #txid hash conflict: at least two txids share the same hash
+                        #
 
-                        for foldedTX in outTX:
-                            skip=foldedTX[0]
-                            if outputSlot>=foldedTX[skip+1]:
+
+                        for enfoldedTX in outTX:
+                            skip=enfoldedTX[0]
+                            if outputSlot>=enfoldedTX[skip+1]:
                                 continue
-                            t_addrS.append(foldedTX[skip+2+outputSlot])
-                            index=foldedTX[skip+1]+2+skip+2*outputSlot
-                            isBTC,inpValue=foldedTX[index:index+2]
+                            t_addrS.append(enfoldedTX[skip+2+outputSlot])
+                            index=enfoldedTX[skip+1]+2+skip+2*outputSlot
+                            isBTC,inpValue=enfoldedTX[index:index+2]
                             if isBTC:
                                 inpValue/=0.000001
                             inpSum+=inpValue
@@ -103,8 +140,8 @@ def foo():
             if transCount%500000==0:
                 print(transCount)
 
-        savePickle(hashMap,f"testMaps/{orIndexx}.pickle")
-        t2=time.time()
+        savePickle(hashMap,f"blockchain/{orIndexx}.pickle")
+        os.system(f'rm -r blockchain/hashMap_{orIndexx}.pickle')
         print(t2-t1)
 
         print("Current map:",orIndexx)
@@ -114,13 +151,17 @@ def foo():
         indexx-=1
         flag=0
         depth=0
+        
+        #if True all input txid references are in the file
         if not any(1 for v in missingInp.values() if type(v)==list and 0 not in v):
             indexx=-1
 
+
+        #previous dicts lookup
         while indexx>=0:
             depth+=1
             print("Map index:",indexx)
-            oldMap=loadPickle(f"testMaps/{indexx}.pickle")
+            oldMap=loadPickle(f"blockchain/{indexx}.pickle")
 
             for k,item in missingInp.items():
                 if type(item)!=list:
@@ -258,16 +299,18 @@ def foo():
                         hashMap[k]=temp
                         missingInp[k]=0
 
+
+            #no missing values check
             if not any(1 for v in missingInp.values() if type(v)==list and 0 not in v):
                 flag=1
                 break
             indexx-=1
 
 
-        lookupDepth.append(depth)
+        
         if flag:
             print("Success.")
-            savePickle(hashMap,f"testMaps/{orIndexx}.pickle")
+            savePickle(hashMap,f"blockchain/{orIndexx}.pickle")
         else:
             error=any(1 for v in missingInp.values() if type(v)==list and 0 not in v)
             if error:
@@ -275,9 +318,8 @@ def foo():
                 break
             else:
                 print("Success.")
-                savePickle(hashMap,f"testMaps/{orIndexx}.pickle")
-    saveJSON(lookupDepth,f"lookupDepth.json")
+                savePickle(hashMap,f"blockchain/{orIndexx}.pickle")
+    
 
-
-if __name__=="__main__:
-    print("getInputs.py")
+if __name__=="__main__":
+    print("getInputAddr.py")

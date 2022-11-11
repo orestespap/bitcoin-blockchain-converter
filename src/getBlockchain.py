@@ -1,8 +1,6 @@
 from fileManager import saveJSON,loadJSON,savePickle
-import time
-import os
+import time, os, mmh3
 from blockchain_parser.blockchain import Blockchain
-import mmh3
 
 
 def getReceivers(tx):
@@ -30,10 +28,13 @@ def getData(txs):
     t=[]
     tAppend=t.append
     for aTX in txs:
+        
         #getSenders_start
         if aTX.is_coinbase():
-            senders=[["cb",4294967295]]
+            senders=[["cb",4294967295]] #dummy unspent txid and output slot for coinbase transactions
         else:
+                    #Each input spends an output from a previous transaction part of the UTXO set.
+                    #Input = (unspent_txid, output_slot)
             senders=[[i.transaction_hash,i.transaction_index] for i in aTX.inputs]
         #getSenders_end
         
@@ -46,10 +47,15 @@ def getData(txs):
 
 def foo():
     t1=time.time()
-    dictIndex=loadJSON("currentBlock.json")[2]
+    
+    try:
+        dictIndex, tcount, startBlock=loadJSON("currentBlock.json")[2], loadJSON("currentBlock.json")[1], loadJSON("currentBlock.json")[0]+1
+    except:
+        dictIndex, tcount, startBlock = 0,0,-1
+
     hashMap={}
-    k1, hashMapGet, hashf, listl, tcounttemp, tcount=loadJSON("currentBlock.json")[1], hashMap.get, mmh3.hash, len, 0,0
-    startBlock, endBlock, blockchain = loadJSON("currentBlock.json")[0]+1, 744117, Blockchain(os.path.expanduser('~/.bitcoin/blocks'))
+    hashMapGet, hashf, listl, tcounttemp=hashMap.get, mmh3.hash, len, 0
+    endBlock, blockchain = 744117, Blockchain(os.path.expanduser('~/.bitcoin/blocks'))
     
     print("Total blocks in the blockchain:",endBlock,"Starting from:",startBlock)
   
@@ -65,42 +71,45 @@ def foo():
             
             inp=[hashf(x,signed=False) if i==0 else x for aTuple in t[0] for i,x in enumerate(aTuple)]
             out=[hashf(outAddr,signed=False) for outAddr in t[1]]
-            tL=[len(inp),*inp,len(out),*out,*t[2],date]#npArray([len(inp),*inp,len(out),*out,*t[2],date],dtype="uint32")
+            tL=[len(inp),*inp,len(out),*out,*t[2],date]
             
             result=hashMapGet(txid)
             
             if result:
+                #txid hash collision, hashed(txid): [tx0List, tx1List, ..., txNList]
                 if type(result[0])==list:
                     result.append(tL)
                 else:
                     hashMap[txid]=[result,tL]
             else:
+                #no txid hash collision: hashed(txid): tx0List
                 hashMap[txid]=tL
 
         tcounttemp+=listl(transactions)
            
         
+        #Every 5M txs parsed, dump data in pickle file 
         if tcounttemp>5000000:
             print("5M. Dumping data ...",time.time()-t2)
-            k1+=tcounttemp
-            saveJSON([block.height,k1],"currentBlock.json")
             tcount+=tcounttemp
             tcounttemp=0
+            
             t2=time.time()
-            savePickle(hashMap,f"bitcoinMaps/hashMap_{dictIndex}.pickle")
+            savePickle(hashMap,f"blockchain/hashMap_{dictIndex}.pickle")
             print("Stored pickle ...",time.time()-t2)
+            
             hashMap={}
             hashMapGet=hashMap.get
             dictIndex+=1
-            t2=time.time()
+            saveJSON([block.height,tcount,dictIndex],"currentBlock.json")
             
     
     if hashMap:
         t2=time.time()
-        savePickle(hashMap,f"bitcoinMaps/hashMap_{dictIndex}.pickle")
+        savePickle(hashMap,f"blockchain/hashMap_{dictIndex}.pickle")
         print("Stored last pickle ...",time.time()-t2)
 
-    saveJSON([block.height,k1+tcounttemp,dictIndex],"currentBlock.json")
+    saveJSON([block.height,tcount+tcounttemp,dictIndex],"currentBlock.json")
         
     print("Elapsed time",time.time()-t1,"Total transactions scanned",tcount)
 
@@ -108,5 +117,5 @@ def foo():
 
 
 if __name__=="__main__":
-    print("downloadBlockchain.py")
+    print("getBlockchain.py")
     

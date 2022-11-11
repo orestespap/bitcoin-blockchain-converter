@@ -1,9 +1,10 @@
 from fileManager import loadPickle, savePickle
-import time
+import time, gc
+from getCluster import findRoot
 #import numpy as np
 #import h5py
-import gc
-from cluster import findRoot
+
+
 
 def clusterf(hashMap,parents):
     getParents=parents.get
@@ -78,7 +79,7 @@ def foo():
 
     for i in range(0,150):
 
-        hashMap=loadPickle(f"bitcoinMaps/{i}.pickle")
+        hashMap=loadPickle(f"blockchain/{i}.pickle")
         print(i,len(hashMap))
         t1=time.time()
         tdata, toffsets=clusterf(hashMap,parents)
@@ -88,11 +89,11 @@ def foo():
         print(time.time()-t1)
 
         print("Storing files")
-        t1=time.time()
+
         savePickle(tdata,f'blockchain/d{i}.pickle')
         savePickle(toffsets,f'blockchain/o{i}.pickle')
+        os.system(f'rm -r blockchain/{i}.pickle')
         
-        print(time.time()-t1)
         del tdata
         del toffsets
         del hashMap
@@ -102,5 +103,5 @@ def foo():
 
 
 if __name__=="__main__":
-    print("flatBlockchain.py")
+    print("getFlatBlockchain.py")
     

@@ -138,4 +138,4 @@ def foo():
         os.system(f'rm -r graphs/{mapString}')
 
 if __name__=="__main__":
-    print("graph.py")
+    print("getGraph.py")

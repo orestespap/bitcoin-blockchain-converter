@@ -91,4 +91,5 @@ def foo():
 	saveJSON(times,"times.json")
 
 if __name__=="__main__":
+    print("getCluster.py")
 	
