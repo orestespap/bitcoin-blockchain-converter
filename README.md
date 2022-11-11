@@ -216,7 +216,7 @@ We implement this heuristic using the [weighted union find](https://aquarchitect
 
         union_find_dict[0]=5, address_5 is the father of address_0
 
-        findRoot(0)=10, address_10 is the root node of address_5. Root nodes/addresses correspond to clusters. address_0 belongs to cluster address_10.
+        findRoot(0)=10, address_10 is the root node of address_0. Root nodes/addresses correspond to clusters. address_0 belongs to cluster address_10.
 
         findRoot(10)=10, address_10's root is itself; address_10 is a root node, therefore it corresponds to a cluster id.
 
