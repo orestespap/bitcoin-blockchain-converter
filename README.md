@@ -282,7 +282,7 @@ Given these transformations, each transaction in the clustered blockhain is now 
 If the blockchain's user graph is part of the pipeline's output, the same data is stored in lists. This is because the last stage (getGraph) uses the lists as input (traversing lists is much faster than traversing numpy arrays). If the user graph is not needed, the clustered blockchain is stored the exact same way the unclustered blockchain is.
 
 ### getGraph.py ###
-The fifth and final stage of the pipeline converts the lists from stage four to a series of _.h5_ files. Each file consists of three arrays; _offsets_, _nodes_ and _edges_. The _nodes_ array contains all of the cluster_ids located in the dictionary, _edges_ contains each node's outgoing edges, and _offsets_ provides each node's edges' location in the _edges_ array.
+The fifth and final stage of the pipeline converts the lists from stage four to a series of _.h5_ files. Each file consists of three arrays; _offsets_, _nodes_ and _edges_. The _nodes_ array contains all of the cluster_ids located in the dictionary, _edges_ contains each node's outgoing edges, and _offsets_ provides each node's edges' location in the _edges_ array. Each transaction is decomposed to _m_ edges, where _m_ equals the number of output values. The starting node is the transaction's sender and the terminal node is the corresponding output address. 
 
 To access some arbitrary node's edges, we need the node's index in the _nodes_ array to retrieve the node's edges' slice in the _edges_ array from the _offsets_ array. 
 

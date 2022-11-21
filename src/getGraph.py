@@ -62,7 +62,7 @@ def foo():
                         change=int(change)
 
 
-                if change>0:
+                if change:
                     outputClusterAddr.append(4294967295)
                     values.append(changeFlag)
                     values.append(change)
@@ -84,7 +84,7 @@ def foo():
                 for i,x in enumerate(tempValues[::2]):
                     temp.extend([outputClusterAddr[0],x,tempValues[2*i+1],timestamp])
 
-                if d[1]!=4294967295:
+                if d[1]!=4294967295 and change:
                     temp.extend([4294967295,changeFlag,change,d[-3]])
 
             else:
@@ -96,7 +96,7 @@ def foo():
                     for i,x in enumerate(tempValues[::2]):
                         temp.extend([outputClusterAddr[oi],x,tempValues[2*i+1],timestamp])
                     start+=ind*2
-                if d[1]!=4294967295:
+                if d[1]!=4294967295 and change:
                     temp.extend([4294967295,changeFlag,change,d[-3]])
 
 
