@@ -10,6 +10,7 @@ The motivation behind this project is my MSc thesis, where the goal is to extrac
 - [**Installing**](#installing)
 - [**Data Compression And Normalization**](#data-compression-and-normalization)
 - [**Pipeline: Step-by-step**](#pipeline-step-by-step)
+- [**Execution**](#execution)
 
 
 ## Features ##
@@ -315,3 +316,5 @@ For all the other nodes, the following property holds:
     sum(incoming_edges_value) >= sum(outgoing_edges_value)
 
 The effect of this property is that a node can not spend more than it makes. The _coinbase_ node can satisfy this property by creating a self-loop for each block, where the monetary value of each edge is equal to the number of Bitcoins created in the corresponding block.
+
+## Execution ##
