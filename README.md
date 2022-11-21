@@ -129,7 +129,7 @@ The pipeline consists of five stages, each represented by an individual script i
 2. [**Get input addresses**](#getinputaddrpy)
 3. [**Get cluster**](#getclusterpy)
 4. [**Get flat blockchain**](#getflatblockchainpy)
-5. Get graph
+5. [**Get graph**](#getgraphpy)
 
 According to a researcher's needs, s/he can opt for the following outputs:
 
@@ -279,6 +279,37 @@ Given these transformations, each transaction in the clustered blockhain is now 
 
     txid, cluster_id, cluster count (m), cluster_0, ..., cluster_m-1, cluster_0_tx_count, cluster_0_output_values (flag,value pairs), ..., cluster_m-1_tx_count, cluster_m-1_output_values, timestamp, sumOfInputValues_flag, sumOfInputValues
 
-If the blockchain's user graph is part of the pipeline's output, the original dictionaries are updated to be consistent with this format. This is because the last stage (getGraph) uses them as input (traversing dictionaries is much faster than traversing numpy arrays). If the user graph is not needed, the clustered blockchain is stored the exact same way the unclustered blockchain is.
+If the blockchain's user graph is part of the pipeline's output, the same data is stored in lists. This is because the last stage (getGraph) uses the lists as input (traversing lists is much faster than traversing numpy arrays). If the user graph is not needed, the clustered blockchain is stored the exact same way the unclustered blockchain is.
 
 ### getGraph.py ###
+The fifth and final stage of the pipeline converts the lists from stage four to a series of _.h5_ files. Each file consists of three arrays; _offsets_, _nodes_ and _edges_. The _nodes_ array contains all of the cluster_ids located in the dictionary, _edges_ contains each node's outgoing edges, and _offsets_ provides each node's edges' location in the _edges_ array.
+
+To access some arbitrary node's edges, we need the node's index in the _nodes_ array to retrieve the node's edges' slice in the _edges_ array from the _offsets_ array. 
+
+The following example illustrates the process:
+
+    clusterID = nodes[k], cluster ID stored in position k of nodes array
+    
+    edges_start_index = offsets[k]
+    edges_end_index = offsets[k+1]
+    
+    nodeEdges = edges[edges_start_index:edges_end_index]
+
+An edge is stored in the following format:
+
+    receiver_cluster_id, outputValue_flag, outputValue, timestamp
+ 
+Each edge is of fixed length. The number of edges in the graph can be trivially calculated as follows: 
+
+    number_of_edges = len(edges)/edge_length, where edge_length equals 4
+    If the code is modified such that a transaction consists of more attributes, edge_length will be greater than 4.
+
+Moreover, the script calculates each transaction's fees by summing the output values and subtracting the sum from sumOfInputValues. This is done to create the corresponding _change_ edge, which starts from the associated sender/cluster node and points to the _coinbase_ node (whose id is 4294967295). 
+
+Because the value of each coinbase transaction equals the number of newly minted Bitcoins plus the sum of transaction fees of a given block, the _coinbase_ node is the only node where the sum of its incoming edges value is less than the sum of its outgoing edges value.
+
+For all the other nodes, the following property holds:
+
+    sum(incoming_edges_value) >= sum(outgoing_edges_value)
+
+The effect of this property is that a node can not spend more than it makes. The _coinbase_ node can satisfy this property by creating a self-loop for each block, where the monetary value of each edge is equal to the number of Bitcoins created in the corresponding block.
