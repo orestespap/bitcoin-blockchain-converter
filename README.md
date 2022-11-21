@@ -128,7 +128,7 @@ The pipeline consists of five stages, each represented by an individual script i
 1. [**Get blockchain**](#getblockchainpy)
 2. [**Get input addresses**](#getinputaddrpy)
 3. [**Get cluster**](#getclusterpy)
-4. Get flat blockchain
+4. [**Get flat blockchain**](#getflatblockchainpy)
 5. Get graph
 
 According to a researcher's needs, s/he can opt for the following outputs:
@@ -202,7 +202,7 @@ The lookup process in pseudocode:
   ```
 If there are missing addresses after the lookup is completed there is definitely something wrong with either the output from stage 1, or the code in stage 2. Every address referenced by an input is in the blockchain, specifically either in a previous transaction recorded in the same block or some older block.
 
-During our research, we retrieved all the blocks starting from height 0, all the way up to (approx.) height 750K and encountered no such error. The output of stage 2 is our fully normalized version of the Bitcoin blockchain, stored in a number of Python dictionaries. In the fourth stage, these dicts are converted in flat integer arrays and stored in h5 format.
+During our research, we retrieved all the blocks starting from height 0, all the way up to (approx.) height 750K and encountered no such error. The output of stage 2 is our fully normalized version of the Bitcoin blockchain, stored in a number of Python dictionaries. In the fourth stage, these dicts are converted to flat integer arrays and stored in h5 format.
 
 ### getCluster.py ###
 In the third stage (optional), input addresses are clustered using the common-input-ownership heuristic. This heuristic explicitly assumes that all input addresses belong to the same entity. CIO is probably the most widely adopted clustering method for the Bitcoin blockchain and computationally inexpensive (the latter being a factor of its popularity).
@@ -222,17 +222,18 @@ We implement this heuristic using the [weighted union find](https://aquarchitect
 
 Stage 3's output is the aforementioned dictionary. Given an address X that is encountered in at least one transaction's input space, _findRoot(X)_ returns the appropriate cluster/root node.
 
-
 ### getFlatBlockchain.py ###
-In the fourth stage, the dictionaries are converted to flat integer arrays. Each dictionary is stored in an _.h5_ file that consists of two arrays; offsets and transactions. As aforementioned, the offsets array allows O(1) access of any arbitrary transaction i, where i corresponds to the transaction's position in the blockchain. This is possible because we store transactions in the exact same sequence found in the blockchain. The transactions array consists of all transaction data stored in the the corresponding dictionary.
+In the fourth stage, the dictionaries are converted to flat integer arrays. Each dictionary is stored in an _.h5_ file that consists of two arrays; _offsets_ and _transactions_. As aforementioned, the offsets array allows O(1) access of any arbitrary transaction i, where i corresponds to the transaction's position in the blockchain. This is possible because we store transactions in the exact same sequence found in the blockchain. The transactions array consists of all transaction data stored in the the corresponding dictionary.
 
-If the clustered blockchain is part of the pipeline's output, the process is a bit more involved because each transaction input space needs to be replaced with its corresponding cluster, which is derived from stage three's output. So, the following transformation is applied to each transaction's input space:
+If the clustered blockchain is part of the pipeline's output, the process is a bit more involved because each transaction input space needs to be replaced with its corresponding cluster, which is derived from stage three's output. 
+
+So, the following transformation is applied to each transaction's input space:
 
     Input: tx
 
     tx=[input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., output_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_m-1, timestamp, sumOfInputValues_flag, sumOfInputValues]
 
-    T=get_clusters, for a list of addresses as input, it returns a list of the corresponding cluster id
+    T=get_clusters, for a list of addresses as input, it returns a list of the corresponding cluster ids
 
     tx_input_space = tx[1:n]
 
@@ -254,13 +255,15 @@ The same process is applied to _tx_'s output space, the difference being that T 
 
     assert len(cluster_set)<=len(tx_output_space)
 
-Further compression can be achieved in the event that _cluster_set_'s size is smaller than _tx_output_space_, given that _tx_output_space_ size is greater than one. If that's the case, we can store each cluster id once instead of multiple times, followed by the number of outputs associated with this cluster and the corresponding output values. The following example illustrates this:
+Further compression can be achieved in the event that _cluster_set_'s size is smaller than _tx_output_space_, given that _tx_output_space_ size is greater than one. If that's the case, we can store each cluster id once instead of multiple times, followed by the number of outputs associated with this cluster and the corresponding output values. 
+
+The following example illustrates this:
 
     tx =[ ... output addresses count (100), outputAddr_0, ..., outputAddr_99, outputValue_0_flag, outputValue_0, ..., outputValue_99_flag, outputValue_99, ... ]
 
     clusters = {cluster_X: [outputAddr_0, ..., outputAddr_99] - [outputAddr_1, outputAddr_30], clusterY: [outputAddr_1, outputAddr_30]}
 
-    tx= [ ... cluster count (2), cluster_X, cluster_Y, 98, cluster_X_output_values, 2, outputValue_1_flag, outputValue_1, outputValue_30_flag, outputValue_30]
+    tx= [ ... cluster count (2), cluster_X, cluster_Y, 98, cluster_X_output_values, 2, outputValue_1_flag, outputValue_1, outputValue_30_flag, outputValue_30, ...]
 
     tx original output and output value space size = 1 + 100 + 2*100 = 301
 
@@ -268,20 +271,14 @@ Further compression can be achieved in the event that _cluster_set_'s size is sm
 
     32% compression 
 
-Thus, compression is achieved by rearranging the transaction's original output value space, such that all output values corresponding to a single cluster id can be trivially accesed while storing each individual cluster id only once. The example does depict an ideal setting; the set of cluster ids is significantlly smaller than a transaction's set of output addresses. If the size of the two sets is about the same, zero compression is achieved. Empirically speaking though, such instances are frequent enough that the resulting format is more storage efficient than the original one.
+Thus, compression is achieved by rearranging the transaction's original output value space, such that all output values corresponding to a single cluster id can be trivially accesed while storing each individual cluster id only once. 
+
+The example does depict an ideal setting; the set of cluster ids is significantlly smaller than a transaction's set of output addresses. If the size of the two sets is about the same, zero compression is achieved. Empirically speaking though, such instances are frequent enough that the resulting format is more storage efficient than the original one.
 
 Given these transformations, each transaction in the clustered blockhain is now represented by the following sequence:
-    txid, cluster_id, cluster count (m), cluster_0, ..., cluster_m-1, cluster_0_tx_count, cluster_0_output_values (flag value pairs), ..., cluster_m-1_tx_count, cluster_m-1_output_values, timestamp, sumOfInputValues_flag, sumOfInputValues
 
-If the blockchain's user graph is part of the pipeline's output, the original dictionaries are updated to be consistent with this format. This is because the last stage (getGraph) uses them as input because, as aforementioned, traversing dictionaries is much faster than traversing numpy arrays. If the user graph is not needed, the clustered blockchain is stored the exact same way the unclustered blockchain is.
+    txid, cluster_id, cluster count (m), cluster_0, ..., cluster_m-1, cluster_0_tx_count, cluster_0_output_values (flag,value pairs), ..., cluster_m-1_tx_count, cluster_m-1_output_values, timestamp, sumOfInputValues_flag, sumOfInputValues
 
-
+If the blockchain's user graph is part of the pipeline's output, the original dictionaries are updated to be consistent with this format. This is because the last stage (getGraph) uses them as input (traversing dictionaries is much faster than traversing numpy arrays). If the user graph is not needed, the clustered blockchain is stored the exact same way the unclustered blockchain is.
 
 ### getGraph.py ###
-
-
-
-
-
-
-
