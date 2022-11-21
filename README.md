@@ -59,7 +59,7 @@ To download all of the dependencies, open up a terminal, cd into the repository'
 
 Each transaction is represented by a sequence of 8-byte integeres. The pattern used is the following:
 
-    txid, input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., output_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_m-1, timestamp, sumOfInputValues_flag, sumOfInputValues
+    txid, input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., outputAddr_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_m-1, timestamp, sumOfInputValues_flag, sumOfInputValues
     
     Element count per transaction: n + 3*m + 6
 
@@ -220,12 +220,60 @@ We implement this heuristic using the [weighted union find](https://aquarchitect
 
         findRoot(10)=10, address_10's root is itself; address_10 is a root node, therefore it corresponds to a cluster id.
 
-Stage 3's output is the aforementioned dictionary. Given an address X that is encountered in at least one transaction's input space, _findRoot(X)_ returns the appropriate cluster/ root node.
+Stage 3's output is the aforementioned dictionary. Given an address X that is encountered in at least one transaction's input space, _findRoot(X)_ returns the appropriate cluster/root node.
 
 
 ### getFlatBlockchain.py ###
-In the fourth stage, 
+In the fourth stage, the dictionaries are converted to flat integer arrays. Each dictionary is stored in an _.h5_ file that consists of two arrays; offsets and transactions. As aforementioned, the offsets array allows O(1) access of any arbitrary transaction i, where i corresponds to the transaction's position in the blockchain. This is possible because we store transactions in the exact same sequence found in the blockchain. The transactions array consists of all transaction data stored in the the corresponding dictionary.
 
+If the clustered blockchain is part of the pipeline's output, the process is a bit more involved because each transaction input space needs to be replaced with its corresponding cluster, which is derived from stage three's output. So, the following transformation is applied to each transaction's input space:
+
+    Input: tx
+
+    tx=[input addresses count (n), input_0, ..., inputAddr_n-1, output addresses count (m), outputAddr_0, ..., output_m-1, outputValue_0_flag, outputValue_0, ..., outputValue_m-1_flag, outputValue_m-1, timestamp, sumOfInputValues_flag, sumOfInputValues]
+
+    T=get_clusters, for a list of addresses as input, it returns a list of the corresponding cluster id
+
+    tx_input_space = tx[1:n]
+
+    cluster_set=set( T(tx_input_space) )
+
+    assert len(cluster_set)==1
+
+    tx_input_space = cluster_set[0]
+
+Given _tx_'s input space of size _n_, each address should point to the same root node. Applying the set function to the return value of _T_ should return a set of size one, else there's been a mistake in the implementation of stage three. Since we have validated our stage three implementation's correctness, this extra check is for illustrative purposes only. Hence, to reduce complexity, T is only applied to the first address of _tx_'s input space, and the returned value corresponds to the new input space, which is reduced from size _n_ (n>=1) to size 1.
+
+The same process is applied to _tx_'s output space, the difference being that T needs to be applied to all of the addresses, since it is possible for each output address to belong to a different cluster.
+
+    tx_output_space = tx[output_space_start_index : output_space_end_index ]
+
+    clusters = T(tx_output_space)
+
+    cluster_set= set(clusters)
+
+    assert len(cluster_set)<=len(tx_output_space)
+
+Further compression can be achieved in the event that _cluster_set_'s size is smaller than _tx_output_space_, given that _tx_output_space_ size is greater than one. If that's the case, we can store each cluster id once instead of multiple times, followed by the number of outputs associated with this cluster and the corresponding output values. The following example illustrates this:
+
+    tx =[ ... output addresses count (100), outputAddr_0, ..., outputAddr_99, outputValue_0_flag, outputValue_0, ..., outputValue_99_flag, outputValue_99, ... ]
+
+    clusters = {cluster_X: [outputAddr_0, ..., outputAddr_99] - [outputAddr_1, outputAddr_30], clusterY: [outputAddr_1, outputAddr_30]}
+
+    tx= [ ... cluster count (2), cluster_X, cluster_Y, 98, cluster_X_output_values, 2, outputValue_1_flag, outputValue_1, outputValue_30_flag, outputValue_30]
+
+    tx original output and output value space size = 1 + 100 + 2*100 = 301
+
+    compressed output and output value space size = 1 + 2 + 1 +2*98 + 1 + 2*2 = 205
+
+    32% compression 
+
+Thus, compression is achieved by rearranging the transaction's original output value space, such that all output values corresponding to a single cluster id can be trivially accesed while storing each individual cluster id only once. The example does depict an ideal setting; the set of cluster ids is significantlly smaller than a transaction's set of output addresses. If the size of the two sets is about the same, zero compression is achieved. Empirically speaking though, such instances are frequent enough that the resulting format is more storage efficient than the original one.
+
+Given these transformations, each transaction in the clustered blockhain is now represented by the following sequence:
+    txid, cluster_id, cluster count (m), cluster_0, ..., cluster_m-1, cluster_0_tx_count, cluster_0_output_values (flag value pairs), ..., cluster_m-1_tx_count, cluster_m-1_output_values, timestamp, sumOfInputValues_flag, sumOfInputValues
+
+If the blockchain's user graph is part of the pipeline's output, the original dictionaries are updated to be consistent with this format. This is because the last stage (getGraph) uses them as input because, as aforementioned, traversing dictionaries is much faster than traversing numpy arrays. If the user graph is not needed, the clustered blockchain is stored the exact same way the unclustered blockchain is.
 
 
 
