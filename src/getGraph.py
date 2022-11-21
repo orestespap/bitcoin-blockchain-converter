@@ -10,8 +10,8 @@ def foo():
     graph={}
 
     for j in range(0,150):
-        txs=loadPickle(f'blockchain/d{j}.pickle')
-        offsets=loadPickle(f'blockchain/o{j}.pickle')
+        txs=loadPickle(f'blockchain/clustered/d{j}.pickle')
+        offsets=loadPickle(f'blockchain/clustered/o{j}.pickle')
         startt=0
         endd=offsets[0]
         t2=time.time()
@@ -106,13 +106,13 @@ def foo():
             else:
                 graph[key]=temp
         if (j+1)%10==0:
-            savePickle(graph,f"graphs/graphDict{j}.pickle")
+            savePickle(graph,f"blockchain/graphs/graphDict{j}.pickle")
             graph={}
             saveJSON({"dictLength":len(graph.keys()),"iter":j,"time":time.time()-t2},"out.json")
 
     print("errors",errors)
     if graph:
-        savePickle(graph,f"graphs/graphDict{j}.pickle")
+        savePickle(graph,f"blockchain/graphs/graphDict{j}.pickle")
         del graph
     print("total exec time",time.time()-t1)
 
@@ -127,7 +127,7 @@ def foo():
                 offsets.append(s)
                 nodes.append(k)
 
-        f = h5py.File(f'graphs/graph{i}.h5', 'w')
+        f = h5py.File(f'blockchain/graphs/graph{i}.h5', 'w')
         f.create_dataset('nodes', data=np.array(nodes,dtype=np.uint32))
         f.create_dataset('offsets', data=np.array(offsets,dtype=np.uint32))
         del offsets
@@ -135,7 +135,7 @@ def foo():
         gc.collect()
         f.create_dataset('edges', data=np.array([v for k in map_ for v in map_[k]],dtype=np.uint32))
         f.close()
-        os.system(f'rm -r graphs/{mapString}')
+        os.system(f'rm -r blockchain/graphs/{mapString}')
 
 if __name__=="__main__":
     print("getGraph.py")

@@ -74,33 +74,42 @@ def rootify(parents):
     return 1
 
 
-def foo():
-    parents=loadPickle("ps.pickle")
-    rootify(parents)
+def foo(unclustered=False,clustered=False, graphh=False):
+    
+    if clustered or graphh:
+        parents=loadPickle("ps.pickle")
+        rootify(parents)
 
-    for i in range(0,150):
+        for i in range(0,150):
 
-        hashMap=loadPickle(f"blockchain/{i}.pickle")
-        print(i,len(hashMap))
-        #t1=time.time()
-        tdata, toffsets=clusterf(hashMap,parents)
-        if tdata==-1:
-            print("error",i)
-            break
-        #print(time.time()-t1)
+            hashMap=loadPickle(f"blockchain/unclustered/{i}.pickle")
+            print(i,len(hashMap))
+            #t1=time.time()
+            tdata, toffsets=clusterf(hashMap,parents)
+            if tdata==-1:
+                print("error",i)
+                break
+            #print(time.time()-t1)
 
-        print("Storing files")
+            print("Storing files")
 
-        savePickle(tdata,f'blockchain/d{i}.pickle')
-        savePickle(toffsets,f'blockchain/o{i}.pickle')
-        os.system(f'rm -r blockchain/{i}.pickle')
-        
-        del tdata
-        del toffsets
-        del hashMap
-        gc.collect()
-
-
+            savePickle(tdata,f'blockchain/clustered/d{i}.pickle')
+            savePickle(toffsets,f'blockchain/clustered/o{i}.pickle')
+            if not unclustered:
+                os.system(f'rm -r blockchain/unclustered/{i}.pickle')
+            
+            del tdata
+            del toffsets
+            del hashMap
+            gc.collect()
+            if clustered:
+                #STORE BLOCKCHAIN h5
+                pass
+    if unclustered:
+        #STORE BLOCKCHAIN h5
+        pass
+    else:
+        os.system(f'rm -r blockchain/unclustered')
 
 
 if __name__=="__main__":

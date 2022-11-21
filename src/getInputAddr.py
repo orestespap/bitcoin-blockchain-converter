@@ -1,5 +1,5 @@
 from fileManager import loadPickle, savePickle, saveJSON, loadJSON
-
+import os
 def foo():
 
     '''Retrieve input addresses from the corresponding unspent transaction 
@@ -35,7 +35,7 @@ def foo():
     for i in range(0,150):
         print("Loading pickle file")
         orIndexx=i
-        hashMap=loadPickle(f"blockchain/hashMap_{orIndexx}.pickle")
+        hashMap=loadPickle(f"blockchain/unclustered/hashMap_{orIndexx}.pickle")
         
         hashMapGet=hashMap.get
         tlookups=0
@@ -140,8 +140,8 @@ def foo():
             if transCount%500000==0:
                 print(transCount)
 
-        savePickle(hashMap,f"blockchain/{orIndexx}.pickle")
-        os.system(f'rm -r blockchain/hashMap_{orIndexx}.pickle')
+        savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
+        os.system(f'rm -r blockchain/unclustered/hashMap_{orIndexx}.pickle')
         print(t2-t1)
 
         print("Current map:",orIndexx)
@@ -161,7 +161,7 @@ def foo():
         while indexx>=0:
             depth+=1
             print("Map index:",indexx)
-            oldMap=loadPickle(f"blockchain/{indexx}.pickle")
+            oldMap=loadPickle(f"blockchain/unclustered/{indexx}.pickle")
 
             for k,item in missingInp.items():
                 if type(item)!=list:
@@ -310,7 +310,7 @@ def foo():
         
         if flag:
             print("Success.")
-            savePickle(hashMap,f"blockchain/{orIndexx}.pickle")
+            savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
         else:
             error=any(1 for v in missingInp.values() if type(v)==list and 0 not in v)
             if error:
@@ -318,7 +318,7 @@ def foo():
                 break
             else:
                 print("Success.")
-                savePickle(hashMap,f"blockchain/{orIndexx}.pickle")
+                savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
     
 
 if __name__=="__main__":

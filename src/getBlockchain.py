@@ -95,7 +95,7 @@ def foo():
             tcounttemp=0
             
             t2=time.time()
-            savePickle(hashMap,f"blockchain/hashMap_{dictIndex}.pickle")
+            savePickle(hashMap,f"blockchain/unclustered/hashMap_{dictIndex}.pickle")
             print("Stored pickle ...",time.time()-t2)
             
             hashMap={}
@@ -106,7 +106,7 @@ def foo():
     
     if hashMap:
         t2=time.time()
-        savePickle(hashMap,f"blockchain/hashMap_{dictIndex}.pickle")
+        savePickle(hashMap,f"blockchain/unclustered/hashMap_{dictIndex}.pickle")
         print("Stored last pickle ...",time.time()-t2)
 
     saveJSON([block.height,tcount+tcounttemp,dictIndex],"currentBlock.json")
