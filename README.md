@@ -318,3 +318,14 @@ For all the other nodes, the following property holds:
 The effect of this property is that a node can not spend more than it makes. The _coinbase_ node can satisfy this property by creating a self-loop for each block, where the monetary value of each edge is equal to the number of Bitcoins created in the corresponding block.
 
 ## Execution ##
+
+Executing the pipeline is trivial. In case you have Bitcoin Core running in the background, make sure to stop the server before launching the pipeline. This is necessary because Bitcoin Core has a lock on the blockchain database, so as long as it's running the Python blockchain parser won't be able to parse the blocks.
+
+To execute the pipeline do the following:
+- Clone the repository to your machine
+- Open up a terminal, cd into the repository and then cd into the /src directory
+- Execute inputs.py to selct the desired outputs (i.e. clustered blockchain and graph) and provide the path to the blocks directory ("~/.bitcoin/blocks") 
+- inputs.py will terminate and launch the pipeline as a deamon process (it will run in the background)
+- main.py will create a src/blockchain directory to store the desired outputs
+
+As mentioned in the beginning, the pipeline takes about three days to complete execution. During execution main.py keeps a log of the pipeline's progress at src/log.json.

@@ -45,7 +45,7 @@ def getData(txs):
     return t
 
 
-def foo():
+def foo(blocksPath='~/.bitcoin/blocks'):
     t1=time.time()
     
     try:
@@ -55,13 +55,13 @@ def foo():
 
     hashMap={}
     hashMapGet, hashf, listl, tcounttemp=hashMap.get, mmh3.hash, len, 0
-    endBlock, blockchain = 744117, Blockchain(os.path.expanduser('~/.bitcoin/blocks'))
+    endBlock, blockchain = 744117, Blockchain(os.path.expanduser(blocksPath))
     
     print("Total blocks in the blockchain:",endBlock,"Starting from:",startBlock)
   
     t2=time.time()
     
-    for block in blockchain.get_ordered_blocks(os.path.expanduser('~/.bitcoin/blocks/index'),start=startBlock, end=endBlock):
+    for block in blockchain.get_ordered_blocks(os.path.expanduser(f'{blocksPath}/index'),start=startBlock, end=endBlock):
         transactions = getData(block.transactions)
         date=int(block.header.timestamp.timestamp())
         
