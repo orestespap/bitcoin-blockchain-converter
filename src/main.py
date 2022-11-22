@@ -62,5 +62,7 @@ if __name__=="__main__":
         else:
             os.system("rm -r blockchain/clustered/*.pickle")        
 
+    os.system("rm -r log.json")
+    os.system("rm -r inputs.json")
     
     print(f"Blockchain conversion successfully completed. Elapsed time(seconds): {time.time()-t1}")
