@@ -326,6 +326,6 @@ To execute the pipeline do the following:
 - Open up a terminal, cd into the repository and then cd into the /src directory
 - Execute inputs.py by typing in the following command: python3 inputs.py
 - Select your desired outputs (i.e. clustered blockchain and graph) and provide the path to the blocks directory ("~/.bitcoin/blocks")
-- inputs.py will terminate and launch the pipeline as a deamon process (it will run in the background)
+- inputs.py will terminate and launch the pipeline as a daemon process (it will run in the background)
 
 As mentioned in the beginning, the pipeline takes about three days to complete execution. During execution main.py keeps a log of the pipeline's progress at src/log.json. The desired outputs will be stored in the src/blockchain directory, which is created by main.py.
