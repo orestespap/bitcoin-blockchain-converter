@@ -32,6 +32,7 @@ def foo():
 
     '''
 
+    t1=time.time()
     for i in range(0,150):
         print("Loading pickle file")
         orIndexx=i
@@ -142,7 +143,6 @@ def foo():
 
         savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
         os.system(f'rm -r blockchain/unclustered/hashMap_{orIndexx}.pickle')
-        print(t2-t1)
 
         print("Current map:",orIndexx)
         indexx=orIndexx
@@ -319,7 +319,7 @@ def foo():
             else:
                 print("Success.")
                 savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
-    
+    print("Stage 2 completed, elapsed time:",time.time()-t1)
 
 if __name__=="__main__":
     print("getInputAddr.py")
