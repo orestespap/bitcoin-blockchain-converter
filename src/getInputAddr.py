@@ -1,5 +1,7 @@
 from fileManager import loadPickle, savePickle, saveJSON, loadJSON
 import os
+import gc
+
 def foo():
 
     '''Retrieve input addresses from the corresponding unspent transaction 
@@ -33,7 +35,8 @@ def foo():
     '''
 
     t1=time.time()
-    for i in range(0,150):
+    lastFileIndex=sorted([int(x.split("_")[1].split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
+    for i in range(0,lastFileIndex+1):
         print("Loading pickle file")
         orIndexx=i
         hashMap=loadPickle(f"blockchain/unclustered/hashMap_{orIndexx}.pickle")
@@ -78,7 +81,7 @@ def foo():
                     skip=outTX[0]
                     if type(skip)!=list:
 
-                        #hash conflict check: if the outputslot spent by the input 
+                        #hash conflict check: if the output slot spent by the input 
                         #is greater than the number of available outputs, the tx
                         #referenced by the input shares the same hash with at least
                         #one more tx.
@@ -154,8 +157,8 @@ def foo():
         
         #if True all input txid references are in the file
         if not any(1 for v in missingInp.values() if type(v)==list and 0 not in v):
+            flag=1
             indexx=-1
-
 
         #previous dicts lookup
         while indexx>=0:
@@ -305,6 +308,8 @@ def foo():
                 flag=1
                 break
             indexx-=1
+        del oldMap #cleanup
+        gc.collect()
 
 
         
@@ -312,13 +317,8 @@ def foo():
             print("Success.")
             savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
         else:
-            error=any(1 for v in missingInp.values() if type(v)==list and 0 not in v)
-            if error:
-                print("Missing inps. @", orIndexx)
-                break
-            else:
-                print("Success.")
-                savePickle(hashMap,f"blockchain/unclustered/{orIndexx}.pickle")
+            print("Missing inps. @", orIndexx)
+                
     print("Stage 2 completed, elapsed time:",time.time()-t1)
 
 if __name__=="__main__":

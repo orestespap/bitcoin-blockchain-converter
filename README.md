@@ -2,7 +2,7 @@
 
 The purpose of this Python 3 pipeline is to retrieve, compress and store the transactions from the Bitcoin blockchain into a big flat int array. This makes output data compatible with all languages, allowing researchers to analyze the data regardless of their tech stack of choice. 
 
-The motivation behind this project is my MSc thesis, where the goal is to extract and analyze Bitcoin's user graph based on the output of this pipeline. The pipeline's execution time is about three days long; the sub-tasks dominating execution time are __getBlockchain.py__ and __getInputAddr.py__. 
+The motivation behind this project is my MSc thesis, where the goal is to extract and analyze Bitcoin's user graph based on the output of this pipeline. The pipeline's execution time is about five days long; the sub-tasks dominating execution time are __getBlockchain.py__ and __getInputAddr.py__. 
 
 ## Table of Contents ##
 - [**Features**](#features)
@@ -328,4 +328,4 @@ To execute the pipeline do the following:
 - Select your desired outputs (i.e. clustered blockchain and graph) and provide the path to the blocks directory ("~/.bitcoin/blocks")
 - inputs.py will terminate and launch the pipeline as a daemon process (it will run in the background)
 
-As mentioned in the beginning, the pipeline takes about three days to complete execution. During execution main.py keeps a log of the pipeline's progress at src/log.json. The desired outputs will be stored in the src/blockchain directory, which is created by main.py.
+As mentioned in the beginning, the pipeline takes about five days to complete execution. During execution main.py keeps a log of the pipeline's progress at src/log.json. The desired outputs will be stored in the src/blockchain directory, which is created by main.py.
