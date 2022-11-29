@@ -75,12 +75,12 @@ def rootify(parents):
 
 
 def foo(unclustered=False,clustered=False, graphh=False):
-    
+    lastFileIndex=sorted([int(x.split("_")[1].split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
     if clustered or graphh:
         parents=loadPickle("ps.pickle")
         rootify(parents)
 
-        for i in range(0,150):
+        for i in range(0,lastFileIndex+1):
 
             hashMap=loadPickle(f"blockchain/unclustered/{i}.pickle")
             print(i,len(hashMap))
@@ -110,6 +110,7 @@ def foo(unclustered=False,clustered=False, graphh=False):
         pass
     else:
         os.system(f'rm -r blockchain/unclustered')
+    os.system("rm -r ps.pickle")
 
 
 if __name__=="__main__":

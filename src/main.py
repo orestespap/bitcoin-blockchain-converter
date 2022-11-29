@@ -27,42 +27,52 @@ if __name__=="__main__":
     
     os.system('mkdir blockchain/unclustered')
 
-    saveJSON({"stage":1,"status":"inProgress"},"log.json")
+    log={"stage_1":{"status":"inProgress","executionTimeInSeconds":-1}}
+    saveJSON(log,"log.json")
     t1=time.time()
 
     f1(blocksPath)
-    saveJSON({"stage":1,"status":"completed","executionTimeInSeconds":time.time()-t1},"log.json")
-   
-    saveJSON({"stage":2,"status":"inProgress"},"log.json")
+    log["stage_1"]["status"], log["stage_1"]["executionTimeInSeconds"]="completed", time.time()-t1
+    log["stage_2"]={"status":"inProgress","executionTimeInSeconds":-1}
+    
+    saveJSON(log,"log.json")
     t2=time.time()
     f2()
-    saveJSON({"stage":2,"status":"completed","executionTimeInSeconds":time.time()-t2},"log.json")
+    log["stage_2"]["status"], log["stage_2"]["executionTimeInSeconds"]="completed", time.time()-t1
+    saveJSON(log,"log.json")
     
     if graphh or clustered:
-        saveJSON({"stage":3,"status":"inProgress"},"log.json")
+        log["stage_3"]={"status":"inProgress","executionTimeInSeconds":-1}
+        saveJSON(log,"log.json")
         os.system('mkdir blockchain/clustered')
         t2=time.time()
         f3()
-        saveJSON({"stage":3,"status":"completed","executionTimeInSeconds":time.time()-t2},"log.json")
+        log["stage_3"]["status"], log["stage_3"]["executionTimeInSeconds"]="completed", time.time()-t1
+        saveJSON(log,"log.json")
 
 
-    saveJSON({"stage":4,"status":"inProgress"},"log.json")
+    
+    log["stage_4"]={"status":"inProgress","executionTimeInSeconds":-1}
+    saveJSON(log,"log.json")
     t2=time.time()
     f4(unclustered,clustered)
-    saveJSON({"stage":4,"status":"completed","executionTimeInSeconds":time.time()-t2},"log.json")
+    log["stage_4"]["status"], log["stage_4"]["executionTimeInSeconds"]="completed", time.time()-t1
+    saveJSON(log,"log.json")
 
     if graphh:
-        saveJSON({"stage":5,"status":"inProgress"},"log.json")
+        log["stage_5"]={"status":"inProgress","executionTimeInSeconds":-1}
+        saveJSON(log,"log.json")
         os.system('mkdir blockchain/graphs')
         t2=time.time()
         f5()
-        saveJSON({"stage":5,"status":"completed","executionTimeInSeconds":time.time()-t2},"log.json")
+        log["stage_5"]["status"], log["stage_5"]["executionTimeInSeconds"]="completed", time.time()-t1
+        saveJSON(log,"log.json")
         if not clustered:
             os.system("rm -r blockchain/clustered")
         else:
             os.system("rm -r blockchain/clustered/*.pickle")        
 
-    os.system("rm -r log.json")
     os.system("rm -r inputs.json")
+    
     
     print(f"Blockchain conversion successfully completed. Elapsed time(seconds): {time.time()-t1}")

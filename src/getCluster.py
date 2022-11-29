@@ -79,8 +79,9 @@ def foo():
     parents, treeSize = {}, {}
 
 	#times=[]
-	for i in range(0,150):
-		hashMap=loadPickle(f"bitcoinMaps/{i}.pickle")
+    lastFileIndex=sorted([int(x.split("_")[1].split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
+	for i in range(0,lastFileIndex+1):
+		hashMap=loadPickle(f"blockchain/unclustered/{i}.pickle")
 		#t1=time.time()
 		cluster(hashMap,parents,treeSize)
 		#times.append({"N":len(parents.keys()),"t":time.time()-t1})
