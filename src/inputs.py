@@ -16,5 +16,5 @@ if __name__ == '__main__':
                 break
             else:
                 print("Select at least one output.")
-    saveJSON({"unclustered":unclustered,"clustered":clustered,"graph":graph,"blocks":blocks},"inputs.json")
+    saveJSON({"unclustered":unclustered,"clustered":clustered,"graph":graphh,"blocks":blocks},"inputs.json")
     subprocess.call("nohup python3 main.py > log.txt 2>&1 </dev/null &",shell=True)
