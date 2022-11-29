@@ -8,8 +8,8 @@ def foo():
     times=[]
     t1=time.time()
     graph={}
-
-    for j in range(0,150):
+    lastFileIndex=sorted([int(x.split(".")[0].split("d")[1]) if "d" in x else int(x.split(".")[0].split("o")[1]) for x in os.listdir("blockchain/clustered")])[-1]
+    for j in range(0,lastFileIndex+1):
         txs=loadPickle(f'blockchain/clustered/d{j}.pickle')
         offsets=loadPickle(f'blockchain/clustered/o{j}.pickle')
         startt=0

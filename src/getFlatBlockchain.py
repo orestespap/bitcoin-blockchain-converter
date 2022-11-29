@@ -95,6 +95,7 @@ def foo(unclustered=False,clustered=False, graphh=False):
 
             savePickle(tdata,f'blockchain/clustered/d{i}.pickle')
             savePickle(toffsets,f'blockchain/clustered/o{i}.pickle')
+
             if not unclustered:
                 os.system(f'rm -r blockchain/unclustered/{i}.pickle')
             
