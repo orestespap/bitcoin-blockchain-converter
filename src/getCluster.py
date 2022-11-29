@@ -1,6 +1,6 @@
 from fileManager import saveJSON,loadJSON, loadPickle, savePickle
 import time
-
+import os
 def findRoot(child,parents):
     parent=parents[child]
     while child!=parent:
@@ -79,7 +79,8 @@ def foo():
     parents, treeSize = {}, {}
 
 	#times=[]
-    lastFileIndex=sorted([int(x.split("_")[1].split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
+
+    lastFileIndex=sorted([int(x.split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
 	for i in range(0,lastFileIndex+1):
 		hashMap=loadPickle(f"blockchain/unclustered/{i}.pickle")
 		#t1=time.time()
