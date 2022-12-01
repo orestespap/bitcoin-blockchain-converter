@@ -1,6 +1,7 @@
 from fileManager import loadPickle, savePickle
 import time, gc
 from getCluster import findRoot
+import os
 #import numpy as np
 #import h5py
 
@@ -75,7 +76,7 @@ def rootify(parents):
 
 
 def foo(unclustered=False,clustered=False, graphh=False):
-    lastFileIndex=sorted([int(x.split("_")[1].split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
+    lastFileIndex=sorted([int(x.split(".")[0]) for x in os.listdir("blockchain/unclustered")])[-1]
     if clustered or graphh:
         parents=loadPickle("ps.pickle")
         rootify(parents)
