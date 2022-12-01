@@ -32,13 +32,13 @@ if __name__=="__main__":
     t1=time.time()
 
     f1(blocksPath)
-    log["stage_1"]["status"], log["stage_1"]["executionTimeInSeconds"]="completed", time.time()-t1
+    log["stage_1"]["status"], log["stage_1"]["executionTimeInSeconds"]="completed", time.time()-t2
     log["stage_2"]={"status":"inProgress","executionTimeInSeconds":-1}
     
     saveJSON(log,"log.json")
     t2=time.time()
     f2()
-    log["stage_2"]["status"], log["stage_2"]["executionTimeInSeconds"]="completed", time.time()-t1
+    log["stage_2"]["status"], log["stage_2"]["executionTimeInSeconds"]="completed", time.time()-t2
     saveJSON(log,"log.json")
     
     if graphh or clustered:
@@ -47,7 +47,7 @@ if __name__=="__main__":
         os.system('mkdir blockchain/clustered')
         t2=time.time()
         f3()
-        log["stage_3"]["status"], log["stage_3"]["executionTimeInSeconds"]="completed", time.time()-t1
+        log["stage_3"]["status"], log["stage_3"]["executionTimeInSeconds"]="completed", time.time()-t2
         saveJSON(log,"log.json")
 
 
@@ -56,7 +56,7 @@ if __name__=="__main__":
     saveJSON(log,"log.json")
     t2=time.time()
     f4(unclustered,clustered)
-    log["stage_4"]["status"], log["stage_4"]["executionTimeInSeconds"]="completed", time.time()-t1
+    log["stage_4"]["status"], log["stage_4"]["executionTimeInSeconds"]="completed", time.time()-t2
     saveJSON(log,"log.json")
 
     if graphh:
@@ -65,7 +65,7 @@ if __name__=="__main__":
         os.system('mkdir blockchain/graphs')
         t2=time.time()
         f5()
-        log["stage_5"]["status"], log["stage_5"]["executionTimeInSeconds"]="completed", time.time()-t1
+        log["stage_5"]["status"], log["stage_5"]["executionTimeInSeconds"]="completed", time.time()-t2
         saveJSON(log,"log.json")
         if not clustered:
             os.system("rm -r blockchain/clustered")
